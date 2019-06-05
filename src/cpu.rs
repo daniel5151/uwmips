@@ -8,9 +8,9 @@ pub struct CPU {
     pc: u32,
     /// General Purpose Regsters (reg[0] is _always_ 0)
     reg: [u32; 32],
-    /// hi multiplication / division registe
+    /// hi multiplication / division register
     hi: u32,
-    /// lo multiplication / division registe
+    /// lo multiplication / division register
     lo: u32,
 }
 
@@ -18,6 +18,18 @@ pub struct CPU {
 pub enum Error {
     InvalidReg,
     BadInstr,
+}
+
+/// CPU Register. Used for traces / debugging.
+pub enum Reg {
+    /// Program Counter
+    PC,
+    /// High multiplication / division register
+    Hi,
+    /// Low multiplication / division register
+    Lo,
+    /// General Purpose Register
+    Reg(usize),
 }
 
 impl CPU {
@@ -48,24 +60,38 @@ impl CPU {
 
     /// Set a register's value.
     /// Returns a Error::InvalidReg if the register index is out of bounds.
-    pub fn set_reg(&mut self, reg: usize, val: u32) -> Result<(), Error> {
-        if reg >= 32 {
-            return Err(Error::InvalidReg);
+    pub fn set_reg(&mut self, reg: Reg, val: u32) -> Result<(), Error> {
+        match reg {
+            Reg::PC => self.pc = val,
+            Reg::Hi => self.hi = val,
+            Reg::Lo => self.lo = val,
+            Reg::Reg(r) => {
+                if r >= 32 {
+                    return Err(Error::InvalidReg);
+                }
+                self.reg[r] = val;
+            }
         }
-
-        self.reg[reg] = val;
 
         Ok(())
     }
 
     /// Get a register's value.
     /// Returns a Error::InvalidReg if the register index is out of bounds.
-    pub fn get_reg(&mut self, reg: usize) -> Result<u32, Error> {
-        if reg >= 32 {
-            return Err(Error::InvalidReg);
-        }
+    pub fn get_reg(&mut self, reg: Reg) -> Result<u32, Error> {
+        let val = match reg {
+            Reg::PC => self.pc,
+            Reg::Hi => self.hi,
+            Reg::Lo => self.lo,
+            Reg::Reg(r) => {
+                if r >= 32 {
+                    return Err(Error::InvalidReg);
+                }
+                self.reg[r]
+            }
+        };
 
-        Ok(self.reg[reg])
+        Ok(val)
     }
 
     /// Tick the CPU forward a single iteration

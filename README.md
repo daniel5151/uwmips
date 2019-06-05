@@ -15,7 +15,10 @@ You can also `cargo install` to install it globally.
 The single `uwmips` binary implements all the frontends.
 
 ```
-Usage: uwmips [frontend] <filename> [...args] [load_address]
+Usage: uwmips [OPTIONS] [frontend] <filename> [...args] [load_address]
+   OPTIONS: --step      Dump state after every CPU instruction
+                          and wait for 'enter' key to continue
+
   frontend: twoints     - <no args>
             twointsargs - <int1> <int2>
             array       - <no args>
