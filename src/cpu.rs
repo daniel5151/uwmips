@@ -1,27 +1,17 @@
-use std::fmt;
-
 use crate::bus::Bus;
 use crate::instr::Instr;
 
 pub struct CPU {
+    /// CPU address space
     mem: Bus,
+    /// Program Counter
     pc: u32,
+    /// General Purpose Regsters (reg[0] is _always_ 0)
     reg: [u32; 32],
+    /// hi multiplication / division registe
     hi: u32,
+    /// lo multiplication / division registe
     lo: u32,
-}
-
-impl fmt::Display for CPU {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let res = (1..=31)
-            .map(|i| format!("${:02} = 0x{:08x}", i, self.reg[i]))
-            .collect::<Vec<_>>()
-            .chunks(4)
-            .map(|chunk| chunk.join("   "))
-            .collect::<Vec<_>>()
-            .join("\n");
-        write!(f, "{}   $pc = 0x{:08x}", res, self.pc)
-    }
 }
 
 #[derive(Debug)]
@@ -46,14 +36,18 @@ impl CPU {
         cpu
     }
 
+    /// Perform a load in the CPU memory space.
     pub fn load(&mut self, addr: u32) -> u32 {
         self.mem.load(addr)
     }
 
+    /// Perform a store in the CPU memory space.
     pub fn store(&mut self, addr: u32, val: u32) {
         self.mem.store(addr, val)
     }
 
+    /// Set a register's value.
+    /// Returns a Error::InvalidReg if the register index is out of bounds.
     pub fn set_reg(&mut self, reg: usize, val: u32) -> Result<(), Error> {
         if reg >= 32 {
             return Err(Error::InvalidReg);
@@ -64,9 +58,21 @@ impl CPU {
         Ok(())
     }
 
-    pub fn step(&mut self) -> Result<bool, Error> {
-        use crate::instr::{I::*, J, R::*};
+    /// Get a register's value.
+    /// Returns a Error::InvalidReg if the register index is out of bounds.
+    pub fn get_reg(&mut self, reg: usize) -> Result<u32, Error> {
+        if reg >= 32 {
+            return Err(Error::InvalidReg);
+        }
 
+        Ok(self.reg[reg])
+    }
+
+    /// Tick the CPU forward a single iteration
+    /// Returns a bool indicating if the CPU is still running, or an [Error] if
+    /// something went wrong.
+    pub fn step(&mut self) -> Result<bool, Error> {
+        // Check for jump back to "OS"
         if self.pc == 0x8123456c {
             return Ok(false);
         }
@@ -74,6 +80,9 @@ impl CPU {
         let instr = Instr::from_u32(self.mem.load(self.pc));
         self.pc += 4;
 
+        // println!("0x{:08x}: {}", self.pc - 4, instr);
+
+        use crate::instr::{I::*, J, R::*};
         match instr {
             Instr::Inval(_) => return Err(Error::BadInstr),
             Instr::J { op, i } => match op {
@@ -86,12 +95,12 @@ impl CPU {
             Instr::I { op, s, t, i } => match op {
                 BEQ => {
                     if self.reg[s] == self.reg[t] {
-                        self.pc = self.pc.wrapping_add(i * 4)
+                        self.pc = self.pc.wrapping_add(i.wrapping_mul(4))
                     }
                 }
                 BNE => {
                     if self.reg[s] != self.reg[t] {
-                        self.pc = self.pc.wrapping_add(i * 4)
+                        self.pc = self.pc.wrapping_add(i.wrapping_mul(4))
                     }
                 }
                 ADDI => self.reg[t] = self.reg[s].wrapping_add(i),
@@ -136,6 +145,23 @@ impl CPU {
             },
         }
 
+        // Enforce that reg[0] is always 0
+        self.reg[0] = 0;
+
         Ok(true)
+    }
+}
+
+use std::fmt;
+impl fmt::Display for CPU {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let res = (1..=31)
+            .map(|i| format!("${:02} = 0x{:08x}", i, self.reg[i]))
+            .collect::<Vec<_>>()
+            .chunks(4)
+            .map(|chunk| chunk.join("   "))
+            .collect::<Vec<_>>()
+            .join("\n");
+        write!(f, "{}   $pc = 0x{:08x}", res, self.pc)
     }
 }

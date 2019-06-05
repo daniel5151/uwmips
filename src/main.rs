@@ -1,3 +1,6 @@
+//! `uwmips` - A simulator for the MIPS instruction set used in CS241 and CS230
+//! at the University of Waterloo.
+
 use std::fs::File;
 use std::io::Read;
 
@@ -10,16 +13,16 @@ fn print_usage() -> ! {
     let exec_name = std::env::args().next().unwrap();
     eprintln!();
     eprintln!(
-        "Usage: {} [mode] <filename> [...args] [load_address]",
+        "Usage: {} [frontend] <filename> [...args] [load_address]",
         exec_name
     );
-    eprintln!("  mode: twoints     - <no args>");
-    eprintln!("        twointsargs - <int1> <int2>");
-    eprintln!("        array       - <no args>");
+    eprintln!("  frontend: twoints     - <no args>");
+    eprintln!("            twointsargs - <int1> <int2>");
+    eprintln!("            array       - <no args>");
     std::process::exit(1);
 }
 
-enum InputMode {
+enum InputFrontend {
     NoArgs,
     TwoInts { int1: i32, int2: i32 },
     Array { array: Vec<i32> },
@@ -27,7 +30,7 @@ enum InputMode {
 
 struct ParsedArgs {
     filename: String,
-    mode: InputMode,
+    frontend: InputFrontend,
     load_address: u32,
 }
 
@@ -35,7 +38,7 @@ fn parse_args() -> Result<ParsedArgs, String> {
     let args: Vec<String> = std::env::args().collect();
 
     if args.len() == 1 {
-        return Err("No mode specified".to_string());
+        return Err("No frontend specified".to_string());
     }
 
     if args.len() == 2 {
@@ -44,12 +47,12 @@ fn parse_args() -> Result<ParsedArgs, String> {
 
     let mut load_address_str = "0";
 
-    let mode = match args[1].as_ref() {
+    let frontend = match args[1].as_ref() {
         "noargs" => {
             if args.len() == 4 {
                 load_address_str = &args[3]
             }
-            InputMode::NoArgs
+            InputFrontend::NoArgs
         }
         "twoints" => {
             let mut ints: [i32; 2] = [0; 2];
@@ -70,7 +73,7 @@ fn parse_args() -> Result<ParsedArgs, String> {
                 load_address_str = &args[3]
             }
 
-            InputMode::TwoInts {
+            InputFrontend::TwoInts {
                 int1: ints[0],
                 int2: ints[1],
             }
@@ -87,7 +90,7 @@ fn parse_args() -> Result<ParsedArgs, String> {
                 load_address_str = &args[5]
             }
 
-            InputMode::TwoInts {
+            InputFrontend::TwoInts {
                 int1: args[3].parse().map_err(|_| "Failed to parse int1")?,
                 int2: args[4].parse().map_err(|_| "Failed to parse int2")?,
             }
@@ -122,7 +125,7 @@ fn parse_args() -> Result<ParsedArgs, String> {
                 load_address_str = &args[3]
             }
 
-            InputMode::Array { array }
+            InputFrontend::Array { array }
         }
         _ => return Err("Invalid mode".to_string()),
     };
@@ -137,7 +140,7 @@ fn parse_args() -> Result<ParsedArgs, String> {
 
     Ok(ParsedArgs {
         filename: args[2].clone(),
-        mode,
+        frontend,
         load_address,
     })
 }
@@ -145,7 +148,7 @@ fn parse_args() -> Result<ParsedArgs, String> {
 fn main() {
     let ParsedArgs {
         filename,
-        mode,
+        frontend,
         load_address,
     } = match parse_args() {
         Ok(args) => args,
@@ -155,6 +158,7 @@ fn main() {
         }
     };
 
+    // Construct the VM
     let mem = mem::MEM::new();
     let bus = bus::Bus::new(mem);
     let mut cpu = cpu::CPU::new(bus, load_address);
@@ -187,13 +191,13 @@ fn main() {
         });
 
     // Step 2: Load args into memory
-    match mode {
-        InputMode::NoArgs => {}
-        InputMode::TwoInts { int1, int2 } => {
+    match frontend {
+        InputFrontend::NoArgs => {}
+        InputFrontend::TwoInts { int1, int2 } => {
             let _ = cpu.set_reg(1, int1 as u32);
             let _ = cpu.set_reg(2, int2 as u32);
         }
-        InputMode::Array { array } => {
+        InputFrontend::Array { array } => {
             let base = 0x20 + load_address;
             for (i, n) in array.iter().enumerate() {
                 cpu.store(base + (i as u32) * 4, *n as u32);
@@ -218,5 +222,6 @@ fn main() {
         }
     }
 
+    // Dump final CPU state
     eprintln!("{}", cpu);
 }
