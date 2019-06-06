@@ -190,7 +190,7 @@ impl fmt::Display for Instr {
                     ADD  | SUB   | SLT | SLTU => write!(f, "{:<5} ${}, ${}, ${}", op, d, s, t),
                 }
             }
-            Instr::Inval(raw) => write!(f, ".word 0x{:08x}", raw),
+            Instr::Inval(raw) => write!(f, ".word 0x{:08x} ({})", raw, raw as i32),
         }
     }
 }

@@ -182,12 +182,19 @@ use std::fmt;
 impl fmt::Display for CPU {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let res = (1..=31)
-            .map(|i| format!("${:02} = 0x{:08x}", i, self.reg[i]))
+            .map(|i| {
+                format!(
+                    "${:02} = 0x{:08x} {:12}",
+                    i,
+                    self.reg[i],
+                    format!("({})", self.reg[i])
+                )
+            })
             .collect::<Vec<_>>()
             .chunks(4)
-            .map(|chunk| chunk.join("   "))
+            .map(|chunk| chunk.join(" "))
             .collect::<Vec<_>>()
             .join("\n");
-        write!(f, "{}   $pc = 0x{:08x}", res, self.pc)
+        write!(f, "{} $pc = 0x{:08x}", res, self.pc)
     }
 }

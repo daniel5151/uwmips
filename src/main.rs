@@ -231,63 +231,65 @@ fn main() {
 
     // Step 3: Run the VM
     loop {
-        match cpu.step() {
-            Ok(true) => {
-                /* keep on running */
-                if flags.step {
-                    // Print Stack RAM
-                    let range = -6i32..=6;
+        if flags.step {
+            // Print Stack RAM
+            let range = -6i32..=6;
 
-                    eprintln!("  ----==== Stack ====-----");
-                    eprintln!("     ADDR    |   HEXVAL   ");
-                    eprintln!("  -----------|------------");
+            eprintln!("  -------------==== Stack ====-------------");
+            eprintln!("       ADDR    |     HEX     |     VAL     ");
+            eprintln!("  -------------|-------------|-------------");
 
-                    let stack_addr = cpu.get_reg(cpu::Reg::Reg(30)).unwrap();
-                    let range = range.map(|offset| stack_addr.wrapping_add((4 * offset) as u32));
+            let stack_addr = cpu.get_reg(cpu::Reg::Reg(30)).unwrap();
+            let range = range.map(|offset| stack_addr.wrapping_add((4 * offset) as u32));
 
-                    for addr in range {
-                        let indicator = if addr == stack_addr { '>' } else { ' ' };
-                        let val = cpu.load(addr);
-                        eprintln!("{} 0x{:08x} | 0x{:08x}", indicator, addr, val,);
-                    }
-
-                    eprintln!();
-
-                    // Print Program RAM
-                    let range = -6i32..=6;
-
-                    eprintln!("  ---------====== Program RAM ======--------");
-                    eprintln!("     ADDR    |   HEXVAL   :     MIPS ASM    ");
-                    eprintln!("  -----------|------------------------------");
-
-                    let pc = cpu.get_reg(cpu::Reg::PC).unwrap();
-                    let range = range.map(|offset| pc.wrapping_add((4 * offset) as u32));
-
-                    for addr in range {
-                        let indicator = if addr == pc { '>' } else { ' ' };
-                        let val = cpu.load(addr);
-                        eprintln!(
-                            "{} 0x{:08x} | 0x{:08x} : {}",
-                            indicator,
-                            addr,
-                            val,
-                            instr::Instr::from_u32(val)
-                        );
-                    }
-
-                    eprintln!();
-
-                    // Print CPU State
-                    eprintln!(
-                        "-------------------------====== CPU State ======-------------------------"
-                    );
-                    eprintln!("{}", cpu);
-
-                    // Wait for input to continue
-                    let mut buf = String::new();
-                    let _ = std::io::stdin().read_line(&mut buf);
-                }
+            for addr in range {
+                let indicator = if addr == stack_addr { '>' } else { ' ' };
+                let val = cpu.load(addr);
+                eprintln!(
+                    "{}  0x{:08x}  | 0x{:08x}  | {}",
+                    indicator, addr, val, val as i32
+                );
             }
+
+            eprintln!();
+
+            // Print Program RAM
+            let range = -6i32..=6;
+
+            eprintln!("  ---------====== Program RAM ======--------");
+            eprintln!("     ADDR    |   HEXVAL   :     MIPS ASM    ");
+            eprintln!("  -----------|------------------------------");
+
+            let pc = cpu.get_reg(cpu::Reg::PC).unwrap();
+            let range = range.map(|offset| pc.wrapping_add((4 * offset) as u32));
+
+            for addr in range {
+                let indicator = if addr == pc { '>' } else { ' ' };
+                let val = cpu.load(addr);
+                eprintln!(
+                    "{} 0x{:08x} | 0x{:08x} : {}",
+                    indicator,
+                    addr,
+                    val,
+                    instr::Instr::from_u32(val)
+                );
+            }
+
+            eprintln!();
+
+            // Print CPU State
+            eprintln!(
+                        "------------------------------------------------====== CPU State ======------------------------------------------------"
+                    );
+            eprintln!("{}", cpu);
+
+            // Wait for input to continue
+            let mut buf = String::new();
+            let _ = std::io::stdin().read_line(&mut buf);
+        }
+
+        match cpu.step() {
+            Ok(true) => { /* keep on running */ }
             Ok(false) => {
                 eprintln!("Execution completed successfully!");
                 break;
