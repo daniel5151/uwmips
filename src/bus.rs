@@ -3,7 +3,7 @@ use std::io::Read;
 use crate::mem::MEM;
 
 /// Mediates CPU memory accesses.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Bus {
     mem: MEM,
 }
@@ -12,6 +12,14 @@ impl Bus {
     /// Create a new Bus instance
     pub fn new(mem: MEM) -> Bus {
         Bus { mem }
+    }
+
+    /// Reads a value from a specified `addr` without side-effects.
+    pub fn peek(&self, addr: u32) -> u32 {
+        match addr {
+            0xffff0004 => 0x10101010,
+            addr => self.mem.peek(addr),
+        }
     }
 
     /// Read a value from a specified `addr`

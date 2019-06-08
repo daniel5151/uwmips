@@ -23,8 +23,7 @@ The single `uwmips` binary implements all the frontends.
 
 ```
 Usage: uwmips [OPTIONS] [frontend] <filename> [...args] [load_address]
-   OPTIONS: --step      Dump state after every CPU instruction
-                          and wait for 'enter' key to continue
+   OPTIONS: --debug     Launch an interactive debugger
 
   frontend: twoints     - <no args>
             twointsargs - <int1> <int2>
@@ -32,9 +31,15 @@ Usage: uwmips [OPTIONS] [frontend] <filename> [...args] [load_address]
             noargs      - <no args>
 ```
 
+## Debugger Commands
+
+- `step` | `s`: Step through the program one instruction at a time
+- `run`: Start running the program
+- `quit` | `exit`: Exit the debugger
+
 ## Screenshots
 
-Running with `--step` gives you a overview of the current state of the program:
+Running with `--debug` and `step`ing through gives you a good overview of the current state of the program:
 
 ```
   -------------==== Stack ====-------------
@@ -80,6 +85,7 @@ $17 = 0x00000000 (0)          $18 = 0x00000000 (0)          $19 = 0x00000000 (0)
 $21 = 0x00000000 (0)          $22 = 0x00000000 (0)          $23 = 0x00000000 (0)          $24 = 0x00000000 (0)
 $25 = 0x00000000 (0)          $26 = 0x00000000 (0)          $27 = 0x00000000 (0)          $28 = 0x00000000 (0)
 $29 = 0x00000000 (0)          $30 = 0x00ffffec (16777196)   $31 = 0x0000001c (28)         $pc = 0x0000004c
+Step>
 ```
 
 Hit enter to advance to the next state.

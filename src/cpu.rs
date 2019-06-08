@@ -1,6 +1,7 @@
 use crate::bus::Bus;
 use crate::instr::Instr;
 
+#[derive(Clone)]
 pub struct CPU {
     /// CPU address space
     mem: Bus,
@@ -48,6 +49,11 @@ impl CPU {
         cpu
     }
 
+    /// Peek a location in the CPU memory space.
+    pub fn peek(&self, addr: u32) -> u32 {
+        self.mem.peek(addr)
+    }
+
     /// Perform a load in the CPU memory space.
     pub fn load(&mut self, addr: u32) -> u32 {
         self.mem.load(addr)
@@ -78,7 +84,7 @@ impl CPU {
 
     /// Get a register's value.
     /// Returns a Error::InvalidReg if the register index is out of bounds.
-    pub fn get_reg(&mut self, reg: Reg) -> Result<u32, Error> {
+    pub fn get_reg(&self, reg: Reg) -> Result<u32, Error> {
         let val = match reg {
             Reg::PC => self.pc,
             Reg::Hi => self.hi,

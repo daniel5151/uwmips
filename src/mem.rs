@@ -3,7 +3,7 @@ use std::collections::HashMap;
 /// A generic word addressable memory structure.
 // TODO: enforce word addressing
 // TODO: switch to something more efficient than a HashMap lol
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct MEM {
     mem: HashMap<u32, u32>,
 }
@@ -16,9 +16,13 @@ impl MEM {
         }
     }
 
+    pub fn peek(&self, addr: u32) -> u32 {
+        *self.mem.get(&addr).unwrap_or(&0)
+    }
+
     /// Read a value from a specified `addr`
     pub fn load(&mut self, addr: u32) -> u32 {
-        *self.mem.get(&addr).unwrap_or(&0)
+        self.peek(addr)
     }
 
     /// Write a value `val` into a specified `addr`
