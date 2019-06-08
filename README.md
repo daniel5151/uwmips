@@ -2,8 +2,9 @@
 
 `uwmips` is a reimplementation of the MIPS VM used by CS241 and CS230 at the University of Waterloo.
 
-It has some basic debugging features. Passing the `--step` flag lets you step through the code one instruction at a time.
-I might add more features, really depends on demand (from my buddies taking the course rn) and available time.
+It has some basic debugging features, including a _time traveling debugger!_. Not only can you step forwards through your code, but you can step _backwards_ as well!
+
+I might add more features, really depends on demand (from my buddies taking the course right now) and available time.
 
 It's written in Rust, which means the code is pretty clean and easy to read, and is really performant :smile:
 
@@ -31,11 +32,7 @@ Usage: uwmips [OPTIONS] [frontend] <filename> [...args] [load_address]
             noargs      - <no args>
 ```
 
-## Debugger Commands
-
-- `step` | `s`: Step through the program one instruction at a time
-- `run`: Start running the program
-- `quit` | `exit`: Exit the debugger
+For all available debugger commands, run with `--debug` and run the `help` command.
 
 ## Screenshots
 

@@ -10,7 +10,7 @@ use crate::debug::Debugger;
 mod args;
 pub mod bus;
 pub mod cpu;
-mod debug;
+pub mod debug;
 pub mod instr;
 pub mod mem;
 
@@ -95,8 +95,8 @@ fn main() {
 
     // Step 3: Run the VM
     if flags.debug {
-        let mut debugger = Debugger::new();
-        if let Err(msg) = debugger.debug(&mut &mut cpu) {
+        let mut debugger = Debugger::new(cpu);
+        if let Err(msg) = debugger.debug() {
             eprintln!("Error! {}", msg);
             std::process::exit(1);
         }
