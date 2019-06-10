@@ -190,10 +190,10 @@ impl fmt::Display for CPU {
         let res = (1..=31)
             .map(|i| {
                 format!(
-                    "${:02} = 0x{:08x} {:12}",
+                    "${:02} = 0x{:08x} {:13}",
                     i,
                     self.reg[i],
-                    format!("({})", self.reg[i])
+                    format!("({})", self.reg[i] as i32)
                 )
             })
             .collect::<Vec<_>>()
