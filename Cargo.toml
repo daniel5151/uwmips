@@ -3,5 +3,6 @@ name = "uwmips"
 version = "0.1.0"
 authors = ["Daniel Prilik <danielprilik@gmail.com>"]
 edition = "2018"
+build = "build.rs"
 
 [dependencies]

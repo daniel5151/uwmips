@@ -8,6 +8,7 @@ use crate::args::*;
 use crate::debug::Debugger;
 
 mod args;
+pub mod asm;
 pub mod bus;
 pub mod cpu;
 pub mod debug;
