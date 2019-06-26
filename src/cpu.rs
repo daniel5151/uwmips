@@ -118,10 +118,10 @@ impl CPU {
         match instr {
             Instr::Inval(_) => return Err(Error::BadInstr),
             Instr::J { op, i } => match op {
-                J::J => self.pc = i,
+                J::J => self.pc = i << 2,
                 J::JAL => {
                     self.reg[31] = self.pc;
-                    self.pc = i
+                    self.pc = i << 2;
                 }
             },
             Instr::I { op, s, t, i } => match op {
